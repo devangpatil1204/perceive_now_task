@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PerceiveNow Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'pn-purple': {
+                            DEFAULT: '#3F1470',
+                            50: '#F5F0FA',
+                            100: '#E9DDF2',
+                            800: '#3F1470',
+                            900: '#280A45',
+                        },
+                        'pn-gold': {
+                            DEFAULT: '#FFA301',
+                            300: '#FFC341',
+                            500: '#FFA301',
+                            700: '#E59400',
+                        },
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in forwards',
+                        'slide-in': 'slideIn 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+        
+        body.dark {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .dark .card {
+            background: #1e293b;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in forwards;
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+        
+        .confidence-low { background: linear-gradient(90deg, #EF4444, #F97316); }
+        .confidence-medium { background: linear-gradient(90deg, #F97316, #F59E0B); }
+        .confidence-high { background: linear-gradient(90deg, #F59E0B, #10B981); }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #e5e7eb;
+        }
+        
+        .dark .progress-bar {
+            background: #334155;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.8s ease-out;
+        }
+        
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .source-card {
+            border-left: 3px solid #8B54BE;
+            transition: all 0.2s ease;
+        }
+        
+        .dark .source-card {
+            border-left-color: #FFA301;
+        }
+        
+        .source-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .dark .source-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .slide-panel {
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .dark .slide-panel {
+            box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c7d2fe;
+            border-radius: 4px;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 py-4 px-6 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-pn-purple p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+                    Perceive<span class="text-pn-gold">Now</span> Intelligence
+                </h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+                
+                <div class="flex items-center space-x-2 bg-pn-purple-50 dark:bg-pn-purple-900 px-4 py-2 rounded-full">
+                    <div class="bg-pn-gold w-2 h-2 rounded-full animate-pulse"></div>
+                    <span class="text-sm text-pn-purple-800 dark:text-pn-gold-200">Executive View</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="py-8 px-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Dashboard Header -->
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-pn-purple to-pn-gold bg-clip-text text-transparent">
+                    Intelligence Decision Engine
+                </h2>
+                <p class="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Where every click justifies million-dollar strategies. Browse insights with confidence.
+                </p>
+            </div>
+            
+            <!-- Filters -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Intelligence Reports
+                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(24 reports)</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full md:max-w-2xl">
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Report Type</label>
+                            <div class="relative">
+                                <select class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg appearance-none focus:ring-2 focus:ring-pn-purple focus:border-transparent">
+                                    <option>All Types</option>
+                                    <option>Market Analysis</option>
+                                    <option>Financial Forecast</option>
+                                    <option>Competitor Intelligence</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Industry</label>
+                            <div class="relative">
+                                <select class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg appearance-none focus:ring-2 focus:ring-pn-purple focus:border-transparent">
+                                    <option>All Industries</option>
+                                    <option>Technology</option>
+                                    <option>Finance</option>
+                                    <option>Healthcare</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Confidence</label>
+                            <div class="relative">
+                                <select class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg appearance-none focus:ring-2 focus:ring-pn-purple focus:border-transparent">
+                                    <option>All Levels</option>
+                                    <option>High (90%+)</option>
+                                    <option>Medium (80-89%)</option>
+                                    <option>Low (70-79%)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="card p-5 flex items-center">
+                    <div class="bg-pn-gold-100 dark:bg-pn-purple-800 p-3 rounded-lg mr-4">
+                        <div class="w-12 h-12 rounded-full border-4 border-pn-gold flex items-center justify-center">
+                            <span class="text-pn-gold font-bold">92%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Avg Confidence</p>
+                        <p class="text-2xl font-bold text-pn-gold dark:text-pn-gold-300">92%</p>
+                    </div>
+                </div>
+                
+                <div class="card p-5">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">High Confidence</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400">78%</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">90%+ confidence score</p>
+                </div>
+                
+                <div class="card p-5">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Verified Sources</p>
+                    <p class="text-2xl font-bold text-pn-purple dark:text-pn-purple-300">248</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Across all reports</p>
+                </div>
+                
+                <div class="card p-5">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Decision Impact</p>
+                    <p class="text-2xl font-bold text-pn-gold dark:text-pn-gold-300">High</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Strategic value index</p>
+                </div>
+            </div>
+            
+            <!-- Reports Grid -->
+            <div class="report-grid">
+                <!-- Report Card 1 -->
+                <div class="card cursor-pointer transform transition-transform hover:-translate-y-1" onclick="openReport(1)">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="tag bg-pn-purple-50 text-pn-purple dark:bg-pn-purple-900 dark:text-pn-purple-200">
+                                Market Analysis
+                            </span>
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    High Confidence
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
+                            Technology Sector Growth Forecast
+                        </h3>
+                        
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Comprehensive analysis of emerging trends and strategic opportunities in the technology sector.
+                        </p>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
+                                Technology
+                            </span>
+                            
+                            <div class="flex items-center">
+                                <span class="text-xl font-bold text-green-600 dark:text-green-400">
+                                    94%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Updated: Sep 12, 2023
+                        </span>
+                        <button class="text-pn-purple dark:text-pn-gold text-sm font-medium">
+                            View Report
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Report Card 2 -->
+                <div class="card cursor-pointer transform transition-transform hover:-translate-y-1" onclick="openReport(2)">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="tag bg-pn-purple-50 text-pn-purple dark:bg-pn-purple-900 dark:text-pn-purple-200">
+                                Financial Forecast
+                            </span>
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full bg-amber-500 mr-1"></div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Reliable
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
+                            Banking Industry Risk Assessment
+                        </h3>
+                        
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Evaluation of financial stability and emerging risks in the banking sector for Q4 2023.
+                        </p>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
+                                Finance
+                            </span>
+                            
+                            <div class="flex items-center">
+                                <span class="text-xl font-bold text-amber-500 dark:text-amber-400">
+                                    87%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Updated: Aug 28, 2023
+                        </span>
+                        <button class="text-pn-purple dark:text-pn-gold text-sm font-medium">
+                            View Report
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Report Card 3 -->
+                <div class="card cursor-pointer transform transition-transform hover:-translate-y-1" onclick="openReport(3)">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="tag bg-pn-purple-50 text-pn-purple dark:bg-pn-purple-900 dark:text-pn-purple-200">
+                                Competitor Intelligence
+                            </span>
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    High Confidence
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
+                            Healthcare Market Competitive Landscape
+                        </h3>
+                        
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Analysis of key players, market positioning, and competitive strategies in healthcare.
+                        </p>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
+                                Healthcare
+                            </span>
+                            
+                            <div class="flex items-center">
+                                <span class="text-xl font-bold text-green-600 dark:text-green-400">
+                                    92%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Updated: Sep 5, 2023
+                        </span>
+                        <button class="text-pn-purple dark:text-pn-gold text-sm font-medium">
+                            View Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Report Detail Panel -->
+    <div id="report-panel" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeReport()"></div>
+        
+        <div class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white dark:bg-gray-800 slide-panel overflow-y-auto">
+            <!-- Panel Header -->
+            <div class="bg-pn-purple dark:bg-pn-purple-900 text-white px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold">Technology Sector Growth Forecast</h2>
+                    <button onclick="closeReport()" class="rounded-md text-gray-300 hover:text-white">
+                        <i class="fa-solid fa-xmark h-6 w-6"></i>
+                    </button>
+                </div>
+                <div class="flex items-center mt-2">
+                    <span class="bg-pn-purple-300 text-xs px-3 py-1 rounded mr-2">
+                        Market Analysis
+                    </span>
+                    <span class="text-sm text-pn-gold-300">Technology</span>
+                </div>
+            </div>
+            
+            <!-- Panel Content -->
+            <div class="p-6">
+                <!-- Summary Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Executive Summary</h3>
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        The technology sector is poised for significant growth in the next 18 months, driven by advancements in AI, cloud computing, and cybersecurity. This report identifies key growth drivers, potential risks, and strategic recommendations for market leadership. Emerging markets show particular promise with projected growth rates exceeding 12% CAGR.
+                    </p>
+                </div>
+                
+                <!-- Insights and Confidence -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Key Insights</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-pn-gold-100 dark:bg-pn-gold-900/20 p-1 rounded-full mr-3 mt-1">
+                                    <div class="bg-pn-gold w-1.5 h-1.5 rounded-full"></div>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">AI market projected to grow at 18.5% CAGR through 2025</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-pn-gold-100 dark:bg-pn-gold-900/20 p-1 rounded-full mr-3 mt-1">
+                                    <div class="bg-pn-gold w-1.5 h-1.5 rounded-full"></div>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Cloud infrastructure spending to reach $120B by end of 2023</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-pn-gold-100 dark:bg-pn-gold-900/20 p-1 rounded-full mr-3 mt-1">
+                                    <div class="bg-pn-gold w-1.5 h-1.5 rounded-full"></div>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Cybersecurity threats increased by 42% YoY</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-pn-gold-100 dark:bg-pn-gold-900/20 p-1 rounded-full mr-3 mt-1">
+                                    <div class="bg-pn-gold w-1.5 h-1.5 rounded-full"></div>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Semiconductor shortage expected to ease in Q2 2024</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Confidence Assessment</h3>
+                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-sm">
+                            <div class="flex flex-col items-center">
+                                <div class="relative w-40 h-40 mb-4">
+                                    <svg viewBox="0 0 160 160" class="w-full h-full">
+                                        <circle cx="80" cy="80" r="70" stroke="#e5e7eb" stroke-width="12" fill="none"></circle>
+                                        <circle cx="80" cy="80" r="70" stroke="#10B981" stroke-width="12" stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="88" fill="none" style="transition: stroke-dashoffset 1s ease-out;"></circle>
+                                    </svg>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                        <span class="font-bold text-green-600 text-2xl">94%</span>
+                                        <span class="text-sm mt-1 text-gray-500 dark:text-gray-400">Confidence</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
+                                    Based on data quality, source reliability, and analytical rigor
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Source Traceability -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Why We Trust This Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                        Verified sources supporting this report. Each source has been validated for reliability.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="source-card p-4 bg-white dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-start">
+                                <div class="bg-pn-purple-100 dark:bg-pn-purple-900 p-2 rounded-lg mr-4">
+                                    <i class="fa-solid fa-chart-column text-pn-purple dark:text-pn-gold"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 dark:text-white">Global Market Insights</h4>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded mr-3">
+                                            Research Report
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            Aug 15, 2023
+                                        </span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Reliability</span>
+                                            <span class="font-medium">95%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill confidence-high" style="width: 95%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="source-card p-4 bg-white dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-start">
+                                <div class="bg-pn-purple-100 dark:bg-pn-purple-900 p-2 rounded-lg mr-4">
+                                    <i class="fa-solid fa-database text-pn-purple dark:text-pn-gold"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 dark:text-white">Internal Sales Data</h4>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded mr-3">
+                                            Internal Database
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            Sep 1, 2023
+                                        </span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Reliability</span>
+                                            <span class="font-medium">92%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill confidence-high" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feedback Form -->
+                <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Feedback & Improvements</h3>
+                    
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Specific Section (optional)</label>
+                            <input type="text" class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pn-purple focus:border-transparent" placeholder="e.g., Market Growth Projections">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Your Feedback</label>
+                            <textarea rows="3" class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pn-purple focus:border-transparent" placeholder="Suggest improvements, flag concerns, or add insights..."></textarea>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <button type="submit" class="bg-pn-gold hover:bg-pn-gold-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                                Submit Feedback
+                            </button>
+                            <span class="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                                Only visible to analysts
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Panel Footer -->
+            <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        Report ID: RPT-2309-TECH-001 | Last updated: Sep 12, 2023
+                    </div>
+                    <button onclick="closeReport()" class="text-sm font-medium text-pn-purple dark:text-pn-gold hover:underline">
+                        Close Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 py-8 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center">
+                <div class="flex justify-center items-center mb-4">
+                    <div class="bg-pn-purple p-2 rounded-lg mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                        Perceive<span class="text-pn-gold">Now</span>
+                    </h3>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Making intelligence feel inevitable. Where every click justifies million-dollar strategies.
+                </p>
+                <p class="mt-4 text-sm text-gray-500 dark:text-gray-500">
+                    PerceiveNow Intelligence Platform • Confidential • © 2023 PerceiveNow, Inc.
+                </p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            
+            // Update icon
+            const moonIcon = themeToggle.querySelector('.fa-moon');
+            const sunIcon = themeToggle.querySelector('.fa-sun');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        // Initialize theme
+        if (localStorage.getItem('theme') === 'dark' || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches && 
+            !localStorage.getItem('theme'))) {
+            document.documentElement.classList.add('dark');
+            themeToggle.querySelector('.fa-moon').classList.add('hidden');
+            themeToggle.querySelector('.fa-sun').classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeToggle.querySelector('.fa-sun').classList.add('hidden');
+            themeToggle.querySelector('.fa-moon').classList.remove('hidden');
+        }
+        
+        // Report panel functionality
+        function openReport() {
+            document.getElementById('report-panel').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        
+        function closeReport() {
+            document.getElementById('report-panel').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Simulate progress bar animation
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            // Store original width
+            const width = bar.style.width;
+            // Reset to 0
+            bar.style.width = '0';
+            // Animate to original width
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        });
+    </script>
+</body>
+</html>
